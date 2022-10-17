@@ -2,10 +2,13 @@
     <PageComponent>
         <template class="flex items-center justify-between">
             <h1 class="text-3xl font-bold text-gray-900">
-                {{ model.id ? model.title : "Create a Survey" }}
+                {{ route.params.id ? model.title : "Create a Survey" }}
             </h1>
         </template>
-        <form @submit.prevent="saveSurvey">
+        <div v-if="surveyLoading" class="flex justify-center">
+            Loading...
+        </div>
+        <form v-else  @submit.prevent="saveSurvey">
             <div class="shadow sm:rounded-md sm:overflow-hidden">
                 <!-- Survey Fields -->
                 <!-- Image -->
@@ -15,8 +18,8 @@
                     </label>
                     <div class="mt-1 flex items-center">
                         <img
-                            v-if="model.image"
-                            :src="model.image"
+                            v-if="model.image_url"
+                            :src="model.image_url"
                             :alt="model.title"
                             class="w-64 h48 object-cover"
                         />
@@ -45,6 +48,7 @@
                         >
                             <input
                                 type="file"
+                                @change="onImageChoose"
                                 class="absolute left-0 top-0 right-0 bottom-0 opacity-0 cursor-pointer"
                             />
                             Change
@@ -187,58 +191,91 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { ref, watch, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import store from "../store";
-import {v4 as uuidv4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
+
 
 import PageComponent from "../components/PageComponent.vue";
 import QuestionEditor from "../components/editor/QuestionEditor.vue";
 
 const route = useRoute();
 
+const router = useRouter();
+
+const surveyLoading = computed(() => store.state.currentSurvey.loading);
+
 //Create empty survey
 let model = ref({
     title: "",
     status: false,
     description: null,
-    image: null,
+    image_url: null,
     expire_date: null,
     questions: [],
 });
+//Watch to currrent survey data change and when this happens we update local model
+watch(
+    () => store.state.currentSurvey.data,
+    (newVal, oldVal) => {
+        model.value = {
+            ...JSON.parse(JSON.stringify(newVal)),
+            status:newVal.status !== "draft",
+        };
+    }
+);
 
 if (route.params.id) {
-    model.value = store.state.surveys.find(
-        (s) => s.id === parseInt(route.params.id)
-    );
+    store.dispatch('getSurvey', route.params.id);
+}
+
+function onImageChoose (ev) {
+    const file = ev.target.files[0];
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        //The field to send on backend and apply valdiations
+        model.value.image = reader.result;
+        //The field to display here
+        model.value.image_url = reader.result;
+    };
+    reader.readAsDataURL(file);
+
 }
 
 function addQuestion(index) {
     const newQuestion = {
-        id:uuidv4(),
-        type:"text",
-        question:"",
-        description:null,
-        data:{},
+        id: uuidv4(),
+        type: "text",
+        question: "",
+        description: null,
+        data: {},
     };
-    model.value.questions.splice(index,0,newQuestion);
+    model.value.questions.splice(index, 0, newQuestion);
 }
 
 function deleteQuestion(question) {
-    model.value.questions = model.value.questions.filter(
-        (q) => q !== question
-    );
+    model.value.questions = model.value.questions.filter((q) => q !== question);
 }
 
 function questionChange(question) {
     model.value.questions = model.value.questions.map((q) => {
-        if(q.id === question.id) {
+        if (q.id === question.id) {
             return JSON.parse(JSON.stringify(question));
         }
         return q;
     });
 }
 
+function saveSurvey() {
+    store.dispatch("saveSurvey", model.value).then(({ data }) => {
+        router.push({
+            name: "SurveyView",
+            params: { id: data.data.id },
+        });
+    });
+}
 </script>
 
 <style></style>

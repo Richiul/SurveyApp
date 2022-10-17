@@ -42,11 +42,13 @@ const tmpSurveys = [
                         },
                     ],
                 },
-            },{
+            },
+            {
                 id: 2,
                 type: "checkbox",
                 question: "Which language do you want to see ?",
-                desription: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis neque nisl. Maecenas viverra pretium semper",
+                desription:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis neque nisl. Maecenas viverra pretium semper",
                 data: {
                     options: [
                         {
@@ -71,11 +73,13 @@ const tmpSurveys = [
                         },
                     ],
                 },
-            },{
+            },
+            {
                 id: 3,
                 type: "checkbox",
                 question: "Which php framework do you like?",
-                desription: "Quisque faucibus vulputate turpis, et dictum ante ultrices dapibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut bibendum vulputate ipsum, vitae ",
+                desription:
+                    "Quisque faucibus vulputate turpis, et dictum ante ultrices dapibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut bibendum vulputate ipsum, vitae ",
                 data: {
                     options: [
                         {
@@ -100,11 +104,13 @@ const tmpSurveys = [
                         },
                     ],
                 },
-            },{
+            },
+            {
                 id: 4,
                 type: "radio",
                 question: "Which laravel framework do you love?",
-                desription: "Quisque faucibus vulputate turpis, et dictum ante ultrices dapibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut bibendum vulputate ipsum, vitae ",
+                desription:
+                    "Quisque faucibus vulputate turpis, et dictum ante ultrices dapibus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut bibendum vulputate ipsum, vitae ",
                 data: {
                     options: [
                         {
@@ -129,23 +135,24 @@ const tmpSurveys = [
                         },
                     ],
                 },
-            },{
+            },
+            {
                 id: 5,
                 type: "text",
                 question: "Favorite youtube channel?",
                 desription: null,
-                data: {
-                    },
-            },{
+                data: {},
+            },
+            {
                 id: 6,
                 type: "textarea",
                 question: "Favorite?",
                 desription: null,
-                data: {
-                    },
+                data: {},
             },
         ],
-    },{
+    },
+    {
         id: 200,
         title: "Survey 2",
         slug: "survey2",
@@ -155,7 +162,7 @@ const tmpSurveys = [
         created_at: "2022-10-14 10:00:00",
         updated_at: "2022-10-14 10:00:00",
         expire_date: "2022-10-24 10:00:00",
-        questions: []
+        questions: [],
     },
     {
         id: 300,
@@ -167,9 +174,8 @@ const tmpSurveys = [
         created_at: "2022-10-14 10:00:00",
         updated_at: "2022-10-14 10:00:00",
         expire_date: "2022-10-24 10:00:00",
-        questions: []
-    }
-    ,
+        questions: [],
+    },
     {
         id: 400,
         title: "Survey 4",
@@ -180,8 +186,8 @@ const tmpSurveys = [
         created_at: "2022-10-14 10:00:00",
         updated_at: "2022-10-14 10:00:00",
         expire_date: "2022-10-24 10:00:00",
-        questions: []
-    }
+        questions: [],
+    },
 ];
 
 const store = createStore({
@@ -191,10 +197,46 @@ const store = createStore({
             token: sessionStorage.getItem("TOKEN"),
         },
         surveys: [...tmpSurveys],
-        questionTypes: ["text","select","radio","checkbox","textarea"],
+        questionTypes: ["text", "select", "radio", "checkbox", "textarea"],
+        currentSurvey: {
+            loading: false,
+            data: {},
+        },
     },
     getters: {},
     actions: {
+        getSurvey({ commit }, id) {
+            commit("setCurrentSurveyLoading", true);
+            return axiosClient
+                .get(`/survey/${id}`)
+                .then((res) => {
+                    commit("setCurrentSurvey", res.data);
+                    commit("setCurrentSurveyLoading", false);
+                    return res;
+                })
+                .catch((err) => {
+                    commit("setCurrentSurveyLoading", false);
+                    throw err;
+                });
+        },
+        saveSurvey({ commit }, survey) {
+            delete survey.image_url;
+            let response;
+            if (survey.id) {
+                response = axiosClient
+                    .put(`/survey/${survey.id}`, survey)
+                    .then((res) => {
+                        commit("setCurrentSurvey", res.data);
+                        return res;
+                    });
+            } else {
+                response = axiosClient.post("/survey", survey).then((res) => {
+                    commit("setCurrentSurvey", res.data);
+                    return res;
+                });
+            }
+            return response;
+        },
         register({ commit }, user) {
             return axiosClient.post("/register", user).then(({ data }) => {
                 commit("setUser", data);
@@ -216,6 +258,12 @@ const store = createStore({
         },
     },
     mutations: {
+        setCurrentSurveyLoading: (state, loading) => {
+            state.currentSurvey.loading = loading;
+        },
+        setCurrentSurvey: (state, survey) => {
+            state.currentSurvey.data = survey.data;
+        },
         logout: (state) => {
             state.user.data = {};
             state.user.token = null;
