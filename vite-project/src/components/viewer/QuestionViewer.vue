@@ -51,6 +51,7 @@
                     </label>
                 </div>
             </div>
+            
             <div v-else-if="question.type === 'checkbox'">
                 <div
                     v-for="(option, ind) of question.data.options"
@@ -107,6 +108,17 @@ let model;
 if (question.type === "checkbox") {
     model = ref({});
 }
+
+function onCheckboxChange($event) {
+    const selectedOptions = [];
+    for( let text in model.value) {
+        if(model.value[text]) {
+            selectedOptions.push(text);
+        }
+    }
+    emits("update:modelValue",selectedOptions);
+}
+
 </script>
 
 <style></style>

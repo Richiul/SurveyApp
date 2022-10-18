@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSurveyAnswerRequest;
 use App\Models\Survey;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Http\Requests\UpdateSurveyRequest;
 use App\Http\Resources\SurveyResource;
+use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestion;
+use App\Models\SurveyQuestionAnswer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
@@ -71,7 +74,7 @@ class SurveyController extends Controller
         return new SurveyResource($survey);
     }
 
-        /**
+    /**
      * Display the specified resource.
      *
      * @param  \App\Models\Survey  $survey
@@ -80,6 +83,36 @@ class SurveyController extends Controller
     public function showForGuest(Survey $survey, Request $request)
     {
         return new SurveyResource($survey);
+    }
+
+    public function storeAnswer(StoreSurveyAnswerRequest $request, Survey $survey)
+    {
+        $validated = $request->validated();
+        $surveyAnswer = SurveyAnswer::create([
+            'survey_id' => $survey->id,
+            'start_date' => date('Y-m-d H:i:s'),
+            'end_date' => date('Y-m-d H:i:s'),
+        ]);
+
+        foreach ($validated['answers'] as $questionId => $answer) {
+            $question = SurveyQuestion::where(['id' => $questionId, 'survey_id' => $survey->id])->get();
+
+            if(!$question){
+                return response("Invalid question ID: \"$questionId\"",400);
+            }
+
+            $data = [
+                'survey_question_id' => $questionId,
+                'survey_answer_id' => $surveyAnswer->id,
+                'answer' => is_array($answer) ? json_encode($answer) : $answer
+            ];
+
+            SurveyQuestionAnswer::create($data);
+
+        }
+
+        return response("",201);
+
     }
 
     /**
@@ -223,9 +256,9 @@ class SurveyController extends Controller
 
     private function updateQuestion(SurveyQuestion $question, $data)
     {
-        
+
         if (is_array($data['data'])) {
-            
+
             $data['data'] = json_encode($data['data']);
         }
 
@@ -244,6 +277,5 @@ class SurveyController extends Controller
         ]);
 
         return $question->update($validator->validated());
-
     }
 }

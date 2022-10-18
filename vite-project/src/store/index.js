@@ -7,6 +7,10 @@ const store = createStore({
             data: {},
             token: sessionStorage.getItem("TOKEN"),
         },
+        dashboard: {
+            loading: false,
+            data: {},
+        },
         surveys: { loading: false, data: [] },
         questionTypes: ["text", "select", "radio", "checkbox", "textarea"],
         currentSurvey: {
@@ -22,6 +26,20 @@ const store = createStore({
     },
     getters: {},
     actions: {
+        getDashboardData({ commit }) {
+            commit("dashboardLoading", true);
+            return axiosClient
+                .get(`/dashboard`)
+                .then((res) => {
+                    commit("dashboardLoading", false);
+                    commit("setDashboardData", res.data);
+                    return res;
+                })
+                .catch(error => {
+                    commit("dashboardLoading", false);
+                    return error;
+                });
+        },
         deleteSurvey({}, id) {
             return axiosClient.delete(`/survey/${id}`);
         },
@@ -80,6 +98,9 @@ const store = createStore({
                     throw err;
                 });
         },
+        saveSurveyAnswer({ commit }, { surveyId, answers }) {
+            return axiosClient.post(`/survey/${surveyId}/answer`, { answers });
+        },
         register({ commit }, user) {
             return axiosClient.post("/register", user).then(({ data }) => {
                 commit("setUser", data);
@@ -101,6 +122,12 @@ const store = createStore({
         },
     },
     mutations: {
+        dashboardLoading:(state,loading) => {
+            state.dashboard.loading = loading;
+        },
+        setDashboardData:(state,data) => {
+            state.dashboard.data = data;
+        },
         setCurrentSurveyLoading: (state, loading) => {
             state.currentSurvey.loading = loading;
         },
