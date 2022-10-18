@@ -21,7 +21,10 @@
                   <div>
                     <MenuButton class="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                       <span class="sr-only">Open user menu</span>
-                      <img class="h-8 w-8 rounded-full" :src="user.imageUrl" alt="" />
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      
                     </MenuButton>
                   </div>
                   <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
@@ -66,6 +69,9 @@
         </DisclosurePanel>
       </Disclosure>
       <router-view></router-view>
+
+      <Notification/>
+
     </div>
   </template>
   
@@ -75,6 +81,7 @@
   import { useStore } from 'vuex'
   import {computed} from 'vue'
 import { useRouter } from 'vue-router';
+import Notification from './Notification.vue';
   
   const navigation = [
     { name: 'Dashboard', to: {name:'Dashboard'}, current: true },
@@ -84,17 +91,18 @@ import { useRouter } from 'vue-router';
 
   export default {
     components: {
-        Disclosure,
-        DisclosureButton,
-        DisclosurePanel,
-        Menu,
-        MenuButton,
-        MenuItem,
-        MenuItems,
-        BellIcon,
-        XMarkIcon,
-        Bars3Icon
-    },
+    Disclosure,
+    DisclosureButton,
+    DisclosurePanel,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+    BellIcon,
+    XMarkIcon,
+    Bars3Icon,
+    Notification
+},
     setup() {
         const store = useStore();
         const router = useRouter();
