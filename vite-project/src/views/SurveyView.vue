@@ -156,7 +156,9 @@
                     >
                         Questions
                         <!-- Add new Question -->
+                        
                         <button
+                            v-if="model.questions"
                             type="button"
                             @click="addQuestion()"
                             class="flex items-center text-sm py-1 px-4 rounded-sm text-white bg-gray-600 hover:bg-gray-700"

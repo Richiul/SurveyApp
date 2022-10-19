@@ -1,14 +1,14 @@
 <template>
-    <fieldset calss="mb-4">
-        <div>
+    <fieldset class="mb-4 ml-6">
+        <div class="ml-2">
             <legend class="text-base font-medium text-gray-900">
                 {{ index + 1 }}. {{ question.question }}
             </legend>
-            <p class="text-gray-500 text-sm">
+            <p class="text-gray-500 text-sm ml-3">
                 {{ question.description }}
             </p>
         </div>
-        <div calss="mt-3">
+        <div class="mt-3 ml-4 mb-4">
             <div v-if="question.type === 'select'">
                 <select
                     :value="modelValue"
@@ -78,14 +78,14 @@
                     type="text"
                     :value="modelValue"
                     @input="emits('update:modelValue', $event.target.value)"
-                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-[300px] shadow-sm sm:text-sm border-gray-300 rounded-md"
                 />
             </div>
             <div v-else-if="question.type === 'textarea'">
                 <textarea
                     :value="modelValue"
                     @input="emits('update:modelValue', $event.target.value)"
-                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-[400px] shadow-sm sm:text-sm border-gray-300 rounded-md"
                 />
             </div>
         </div>
